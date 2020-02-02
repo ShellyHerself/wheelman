@@ -97,7 +97,7 @@ try:
     with open(args.config_file) as config:
         config = yaml.load(config.read(), Loader=yaml.Loader)
 
-except yaml.YAMLError, exc:
+except (yaml.YAMLError, exc):
     print('* ERROR: Config YAML parsing failure.')
 
     if hasattr(exc, 'problem_mark'):
