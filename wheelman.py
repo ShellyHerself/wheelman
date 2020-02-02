@@ -33,7 +33,6 @@ SOFTWARE.
 
 print('\n\n' + '*'*80)
 print('* Initializing Wheelman.')
-sys.stdout.flush()
 
 class ExitCodes:
     SUCCESS = 0
