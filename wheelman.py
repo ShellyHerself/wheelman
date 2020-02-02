@@ -83,7 +83,7 @@ parser.add_argument(
     help='What file to read the config from.',
     default=".wheelman.yml",
     required=True)
-args.parse_args()
+args = parser.parse_args()
 
 
 ### Config set up.
