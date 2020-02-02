@@ -31,10 +31,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
+print('\n\n' + '*'*80)
+print('* Initializing Wheelman.')
+sys.stdout.flush()
+
 class ExitCodes:
     SUCCESS = 0
     UNSPECIFIED = 1
+
     MISSING_DEPENDENCIES = 10
+    CONFIG_FILE_NOT_FOUND = 11
+    CONFIG_YAML_PARSING_ERROR = 12
 
     BUILD_FAILED_WHEEL = 20
     BUILD_FAILED_SOURCE_DIST = 21
@@ -45,13 +52,15 @@ class ExitCodes:
     PYPI_MISSING_ENVIRONMENT_VARS = 51
     PYPI_MISSING_CONFIG_VARS = 52
 
+import os
+import sys
+import shutil
+
+from argparse import ArgumentParser
 from traceback import format_exc
 
 try:
-    import os
-    import sys
     import yaml
-    import shutil
     from subprocess import run
 except ImportError:
     print(format_exc())
@@ -60,18 +69,55 @@ except Exception:
     print(format_exc())
     exit(ExitCodes.UNSPECIFIED)
 
+
+### Argument parsing.
+
+parser = ArgumentParser(
+    description='Python wheel and sdist build automation tool.',
+    allow_abbrev=False)
+parser.add_argument(
+    '--target',
+    help='Which target to use from the list of targets in the config',
+    required=True)
+parser.add_argument(
+    '--config-file',
+    help='What file to read the config from.',
+    default=".wheelman.yml",
+    required=True)
+args.parse_args()
+
+
+### Config set up.
+
+print('* Loading config file from %s' % args.config_file)
+
 config = {}
 
-with open(".wheelman.yml") as config:
-    config = yaml.load(config.read())
+try:
+    with open(args.config_file) as config:
+        config = yaml.load(config.read(), Loader=yaml.Loader)
 
-target_os = sys.platform
+except yaml.YAMLError, exc:
+    print('* ERROR: Config YAML parsing failure.')
 
-# simplify this for ease of use.
-if "linux" in sys.platform:
-    target_os = "linux"
+    if hasattr(exc, 'problem_mark'):
+        mark = exc.problem_mark
+        print('* At position: (%s:%s)' % (mark.line+1, mark.column+1))
+
+    exit(ExitCodes.CONFIG_YAML_PARSING_ERROR)
+
+except Exception:
+    print("* ERROR: Couldn't load config file.")
+    exit(ExitCodes.CONFIG_FILE_NOT_FOUND)
+
+
+### Preparatory cleanup.
+
+print('\n\n' + '*'*80)
+print('* Prepping environment.')
 
 try:
+    print('* Deleting potential leftover dist folder.')
     # Just in case for if this is a persistent VM.
     # This is the folder that we upload stuff to pypi from.
     # We want it clean.
@@ -81,14 +127,17 @@ try:
 except Exception:
     pass
 
+
 ### Copy the include files into the package.
 
 for name in config['include_files']:
+    print('* Copying file %s into folder %s' % (name, config['name']))
     shutil.copyfile(name, "%s/%s" % (config['name'], name))
+
 
 ### Build our targets!
 
-for target in config['targets'].get(target_os, ()):
+for target in config['targets'].get(args.target, ()):
     # It's a good idea to clean this info up before we do anything else.
     # The files might clash with each other because of different features
     # between python versions.
