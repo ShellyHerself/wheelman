@@ -145,7 +145,7 @@ for target in config['targets'].get(target_os, ()):
 
 pypi_config = config.get("pypi", {})
 
-# You can't ust go and upload every commit whilly nilly, default should only
+# You can't just go and upload every commit whilly nilly, default should only
 # upload for releases.
 only_tags = pypi_config.get('only_upload_tags', True)
 is_tag = os.environ.get('APPVEYOR_REPO_TAG', 'false') == 'true'
