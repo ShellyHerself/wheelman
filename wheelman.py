@@ -81,8 +81,7 @@ parser.add_argument(
 parser.add_argument(
     '--config-file',
     help='What file to read the config from.',
-    default=".wheelman.yml",
-    required=True)
+    default=".wheelman.yml")
 args = parser.parse_args()
 
 
