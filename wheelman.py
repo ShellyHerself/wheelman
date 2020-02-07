@@ -247,6 +247,9 @@ if (# Only even attempt to upload if we have the right environment vars to do so
     print('* Using twine located at %s.' % (twine_py))
     sys.stdout.flush()
 
+    if pypi_url == "https://pypi.org/legacy/":
+        pypi_url = "https://upload.pypi.org/legacy/"
+
     if run([py_exe, twine_py, "upload",
             # Let's not lock up our hands off build environment now.
             "--non-interactive",
