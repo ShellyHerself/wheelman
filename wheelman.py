@@ -159,6 +159,13 @@ for target in config['targets'].get(args.target, ()):
         exit(ExitCodes.PIP_FAILURE)
 
     print('\n\n' + '*'*80)
+    print('* Getting requirements.')
+
+    if os.path.exists("requirements.txt"):
+        if run([py_exe, '-m', 'pip', 'install', '-r', 'requirements.txt']).returncode != 0:
+            exit(ExitCodes.PIP_FAILURE)
+
+    print('\n\n' + '*'*80)
     print('* Building for %s now.' % (py_exe))
     sys.stdout.flush()
 
